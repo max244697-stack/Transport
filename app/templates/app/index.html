@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>БусПереїзд Буча</title>
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ static_v }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/logo.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/logo.png' %}">
+</head>
+
+<body>
+
+  {% if messages %}
+    <div class="container messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'success' }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <header class="hero" style="background-image: url('{% static 'images/van.jpg' %}');">
+    <div class="hero-overlay"></div>
+
+    <div class="container">
+      <div class="hero-top">
+      
+        <h1 class="brand-title"> БусПереїзд Буча</h1>
+
+    
+        <div class="hero-contacts">
+          <a href="tel:0934205320" class="btn phone" id="phoneCopy" data-phone="093 420 53 20"
+            aria-label="Скопіювати номер телефону">
+            <svg class="iconphone" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+              <path
+                d="M19.23 15.26l-2.54-.29a1.99 1.99 0 0 0-1.64.57l-1.84 1.84a15.045 15.045 0 0 1-6.59-6.59l1.85-1.85c.43-.43.64-1.03.57-1.64l-.29-2.52a2.001 2.001 0 0 0-1.99-1.77H5.03c-1.13 0-2.07.94-2 2.07c.53 8.54 7.36 15.36 15.89 15.89c1.13.07 2.07-.87 2.07-2v-1.73c.01-1.01-.75-1.86-1.76-1.98z" />
+            </svg>
+            093 420 53 20
+          </a>
+
+          <a href="https://t.me/buchagruz" class="btn telegram" target="_blank" rel="noopener noreferrer">
+            <img src="{% static 'images/telegram.png' %}" class="iconphone" alt="">
+            Telegram
+          </a>
+
+          <a href="https://connect.viber.com/business/ebc2219e-0634-11f1-8c88-aa49d1a7a8c8" class="btn viber" target="_blank" rel="noopener noreferrer">
+            <img src="{% static 'images/viber.png' %}" class="iconphone" alt="">
+            Viber
+          </a>
+        </div>
+      </div>
+
+      <p class="lead">Буча • Ірпінь • Гостомель • Ворзель • Київ та область</p>
+      <p class="sub">Швидкі та надійні вантажоперевезення — дивани, офіси, будматеріали.</p>
+      <button type="button" class="order-btn order-btn--hero" data-open-order aria-haspopup="dialog">
+        Замовити
+      </button>
+    </div>
+  </header>
+
+  <!-- Tabs: Ціни / Про нас -->
+  <div class="tabs container">
+    <div class="tab-buttons" role="tablist" aria-label="Контент">
+      <button class="tab-button active" data-target="panel-prices" role="tab" aria-selected="true">Ціни</button>
+      <button class="tab-button" data-target="panel-works" role="tab" aria-selected="false">Виконані замовлення</button>
+      <button class="tab-button" data-target="panel-about" role="tab" aria-selected="false">Про нас</button>
+    </div>
+
+    <div class="tab-panels">
+      <div id="panel-prices" class="tab-panel active">
+        <section id="prices" class="muted-section">
+          <div class="prices-header">
+            <div>
+              <h2>Тарифи</h2>
+              <p class="prices-lead">Орієнтовна вартість. Точну ціну узгодимо після заявки.</p>
+            </div>
+          </div>
+
+          <div class="tariff-cards">
+            {% for group in tariff_groups %}
+              <article class="card tariff{% if group.is_featured %} featured{% endif %}">
+                <h3>{{ group.name }}</h3>
+                <div class="tariff-list">
+                  {% for tariff in group.tariffs %}
+                    <div class="tariff-item{% if tariff.is_featured %} featured{% endif %}">
+                      <span class="tariff-name">{{ tariff.description|default:"Послуга" }}</span>
+                      <span class="price-inline">{{ tariff.price }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              </article>
+            {% empty %}
+              <article class="card tariff">
+                <h3>Тарифи</h3>
+                <p>Поки немає доступних тарифів. Додайте їх через адмінку.</p>
+              </article>
+            {% endfor %}
+
+            <article class="card" id="what-we-transport">
+              <h3>Що ми перевозимо</h3>
+              <ul class="transport-list">
+                <li>Квартирні та офісні переїзди</li>
+                <li>Перевезення меблів (шафи, ліжка, дивани)</li>
+                <li>Доставка техніки (холодильники, пральні машини)</li>
+                <li>Доставка будматеріалів</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <div id="panel-works" class="tab-panel">
+        <section id="works" class="muted-section">
+          <div class="prices-header">
+            <div>
+              <h2>Виконані замовлення</h2>
+              <p class="prices-lead">Приклади наших перевезень.</p>
+            </div>
+          </div>
+
+          <div class="works-grid">
+            {% for item in completed_orders %}
+              {% if item.image %}
+                <figure class="works-item">
+                  <button type="button" class="works-link" data-full="{{ item.image.url }}">
+                    <img src="{{ item.image.url }}" alt="{{ item.description|default:'Виконане замовлення' }}">
+                  </button>
+                  {% if item.description %}
+                    <figcaption>{{ item.description }}</figcaption>
+                  {% endif %}
+                </figure>
+              {% endif %}
+            {% empty %}
+              <p class="prices-lead">Поки немає фото. Додайте їх через адмінку.</p>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      <div id="panel-about" class="tab-panel">
+        <!-- About content: moved here so it appears in the "Про нас" tab -->
+        <section id="overview" class="seo-section">
+          <h2>БусПереїзд Буча — професійні вантажні перевезення у Бучі та Київській області</h2>
+          <p>Компанія <strong>БусПереїзд Буча</strong> надає послуги вантажних перевезень у місті Буча та по всій Київській області. Ми спеціалізуємося на квартирних і офісних переїздах, перевезенні меблів, побутової техніки, будівельних матеріалів та комерційних вантажів. Наша команда працює для того, щоб зробити будь-яке транспортування максимально зручним, швидким і безпечним для клієнта.</p>
+          <p>Переїзд — це завжди відповідальний процес, який потребує правильної організації. Неправильне завантаження, відсутність фіксації вантажу або поспіх можуть призвести до пошкоджень майна. Саме тому ми підходимо до кожного замовлення уважно та професійно.</p>
+        </section>
+
+        <section id="coverage">
+          <h3>Вантажні перевезення по місту Буча та області</h3>
+          <p>Працюємо по Бучі, Ірпеню, Гостомелю, Ворзелю, Києву та населених пунктах Київської області. Можливі міжміські перевезення по Україні за домовленістю.</p>
+          <ul>
+            <li>перевезти меблі з квартири в квартиру</li>
+            <li>організувати повний квартирний переїзд</li>
+            <li>доставити будівельні матеріали</li>
+            <li>перевезти холодильник, пральну машину чи іншу техніку</li>
+            <li>перевезти товар для магазину</li>
+            <li>вивезти старі меблі</li>
+          </ul>
+        </section>
+
+        <section id="fleet">
+          <h3>Наш транспорт</h3>
+          <p>Для перевезень використовується Renault Master вантажопідйомністю до 1,5 тонни — оптимальний варіант для більшості міських переїздів та вантажів середнього об’єму.</p>
+          <ul>
+            <li>достатній об’єм кузова для меблів</li>
+            <li>можливість транспортування габаритних речей</li>
+            <li>чистий та доглянутий вантажний відсік</li>
+            <li>технічно справний стан</li>
+          </ul>
+        </section>
+
+        <section id="residential">
+          <h3>Квартирні переїзди у Бучі</h3>
+          <p>Надаємо повний спектр послуг: від перевезення однієї одиниці меблів до повного квартирного переїзду. За потреби надаємо вантажників за домовленістю.</p>
+          <ul>
+            <li>дивани, шафи, ліжка</li>
+            <li>столи, комоди</li>
+            <li>холодильники, пральні машини</li>
+            <li>коробки з особистими речами</li>
+          </ul>
+        </section>
+
+        <section id="office">
+          <h3>Офісні перевезення</h3>
+          <p>Швидко та акуратно перевозимо офісні меблі, техніку, документи та обладнання, дотримуючись погодженого графіку.</p>
+        </section>
+
+        <section id="materials">
+          <h3>Доставка будівельних матеріалів</h3>
+          <p>Доставляємо гіпсокартон, мішки зі сумішами, інструменти, двері, вікна, сантехніку та інші матеріали з магазинів або складів до об’єкта.</p>
+        </section>
+
+        <section id="advantages">
+          <h3>Переваги співпраці з нами</h3>
+          <ul>
+            <li>подача автомобіля точно в обумовлений час</li>
+            <li>прозора система розрахунку вартості</li>
+            <li>відсутність прихованих доплат</li>
+            <li>дбайливе ставлення до вантажу</li>
+            <li>гнучкий графік роботи</li>
+            <li>індивідуальний підхід</li>
+          </ul>
+        </section>
+
+        <section id="pricing">
+          <h3>Вартість послуг</h3>
+          <p>Мінімальне замовлення — від 500 грн (авто + водій, до 1,5 т). Вартість залежить від відстані, об’єму вантажу, кількості рейсів та необхідності вантажників. Точну ціну можна дізнатися телефоном.</p>
+        </section>
+
+        <section id="how-to-order">
+          <h3>Як замовити</h3>
+          <ol>
+            <li>Зателефонуйте або напишіть.</li>
+            <li>Повідомте адресу завантаження та розвантаження.</li>
+            <li>Опишіть об’єм вантажу.</li>
+            <li>Узгодьте зручний час.</li>
+          </ol>
+          <p><strong>БусПереїзд Буча</strong> — ваш надійний партнер у перевезеннях.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  
+
+  <footer>
+    <div class="container footer-contacts">
+      <span>© 2026 БусПереїзд Буча</span>
+      <p>Якщо будуть питання — пишіть або телефонуйте, ми завжди доступні!</p>
+      <a href="tel:0934205320" class="footer-phone" aria-label="Телефон">093 420 53 20</a>
+      <a href="https://t.me/buchagruz" target="_blank" rel="noopener noreferrer"><img src="{% static 'images/telegram.png' %}" class="iconphone" alt="Telegram"></a>
+      <a href="https://connect.viber.com/business/ebc2219e-0634-11f1-8c88-aa49d1a7a8c8" target="_blank" rel="noopener noreferrer"><img
+          src="{% static 'images/viber.png' %}" class="iconphone" alt="Viber"></a>
+    </div>
+  </footer>
+
+  <div id="toast" aria-live="polite"></div>
+
+  <div class="photo-lightbox" id="photo-lightbox" hidden role="dialog" aria-modal="true" aria-label="Перегляд фото">
+    <button type="button" class="photo-lightbox-close" data-close-photo aria-label="Закрити">&times;</button>
+    <img class="photo-lightbox-image" alt="">
+  </div>
+
+  <div class="modal" id="order-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="order-modal-title">
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-dialog">
+      <button type="button" class="modal-close" data-close-modal aria-label="Закрити">&times;</button>
+      <h2 id="order-modal-title">Замовити перевезення</h2>
+      <p class="modal-sub">Залиште заявку — передзвонимо та узгодимо деталі.</p>
+
+      <form id="order-form" class="order-form" novalidate method="post">
+        {% csrf_token %}
+        <label class="form-field">
+          <span>Телефон *</span>
+          <input id="phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel"
+            placeholder="093 420 53 20" pattern="[\d\s+\-()]{10,20}" value="{{ request.POST.phone }}">
+        </label>
+
+        <label class="form-field">
+          <span>Тип перевезення *</span>
+          <select name="transport_type" required>
+            <option value="" disabled{% if not request.POST.transport_type %} selected{% endif %}>Оберіть тип</option>
+            {% for category in categories %}
+              <option value="{{ category.name }}"{% if request.POST.transport_type == category.name %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <div class="order-when">
+          <label class="form-field">
+            <span>Бажана дата *</span>
+            <input type="date" name="scheduled_date" required value="{{ request.POST.scheduled_date }}">
+          </label>
+          <label class="form-field">
+            <span>Орієнтовний час *</span>
+            <input type="time" name="scheduled_time" required value="{{ request.POST.scheduled_time }}">
+            <small class="map-hint">Приблизно, узгодимо по телефону</small>
+          </label>
+        </div>
+
+        <div class="order-maps">
+          <div class="form-field form-field--map">
+            <label for="from_location">Звідки *</label>
+            <input id="from_location" type="text" name="from_location" required autocomplete="street-address"
+              placeholder="Місто, вулиця, будинок" value="{{ request.POST.from_location }}">
+            <input type="hidden" name="from_lat" value="{{ request.POST.from_lat }}">
+            <input type="hidden" name="from_lng" value="{{ request.POST.from_lng }}">
+            <div class="order-map" id="map-from" role="application" aria-label="Карта пункту відправлення"></div>
+            <small class="map-hint">Поставте мітку на карті — обовʼязково</small>
+          </div>
+
+          <div class="form-field form-field--map">
+            <label for="to_location">Куди *</label>
+            <input id="to_location" type="text" name="to_location" required autocomplete="street-address"
+              placeholder="Місто, вулиця, будинок" value="{{ request.POST.to_location }}">
+            <input type="hidden" name="to_lat" value="{{ request.POST.to_lat }}">
+            <input type="hidden" name="to_lng" value="{{ request.POST.to_lng }}">
+            <div class="order-map" id="map-to" role="application" aria-label="Карта пункту призначення"></div>
+            <small class="map-hint">Поставте мітку на карті — обовʼязково</small>
+          </div>
+        </div>
+        
+        <button type="submit" class="order-btn order-btn--full">Надіслати заявку</button>
+      </form>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.js"></script>
+  <script src="{% static 'js/main.js' %}?v={{ static_v }}"></script>
+
+</body>
+
+</html>

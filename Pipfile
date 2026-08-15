@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+python-dotenv = "*"
+psycopg2-binary = "*"
+pillow = "*"
+django-jazzmin = "*"
+django-summernote = "*"
+dj-database-url = "*"
+whitenoise = "*"
+gunicorn = "*"
+django-storages = {extras = ["s3"], version = "*"}
+boto3 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.14"

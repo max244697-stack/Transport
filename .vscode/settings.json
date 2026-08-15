@@ -1,0 +1,6 @@
+{
+    "makefile.configureOnOpen": false,
+    "python.defaultInterpreterPath": "C:\\Users\\maxse\\.virtualenvs\\Transport-W9GusCGQ\\Scripts\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "python-envs.defaultEnvManager": "ms-python.python:pipenv"
+}
