@@ -272,6 +272,15 @@
           </select>
         </label>
 
+        <label class="form-field">
+          <span>Потрібні вантажники? *</span>
+          <select name="need_loaders" required>
+            <option value="" disabled{% if not request.POST.need_loaders %} selected{% endif %}>Оберіть</option>
+            <option value="yes"{% if request.POST.need_loaders == 'yes' %} selected{% endif %}>Так</option>
+            <option value="no"{% if request.POST.need_loaders == 'no' %} selected{% endif %}>Ні</option>
+          </select>
+        </label>
+
         <div class="order-when">
           <label class="form-field">
             <span>Бажана дата *</span>

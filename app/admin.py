@@ -67,14 +67,14 @@ class CompletedOrderAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-	list_display = ('id', 'namber', 'type', 'scheduled_date', 'scheduled_time', 'adress_from', 'adress_to', 'date', 'order', 'is_featured')
+	list_display = ('id', 'namber', 'type', 'need_loaders', 'scheduled_date', 'scheduled_time', 'adress_from', 'adress_to', 'date', 'order', 'is_featured')
 	list_editable = ('order', 'is_featured')
-	list_filter = ('is_featured', 'scheduled_date', 'date')
+	list_filter = ('need_loaders', 'is_featured', 'scheduled_date', 'date')
 	search_fields = ('namber', 'type', 'adress_from', 'adress_to')
 	ordering = ('-date', 'order', 'pk')
 	fieldsets = (
 		(None, {
-			'fields': ('namber', 'type', 'scheduled_date', 'scheduled_time', 'adress_from', 'adress_to', 'date'),
+			'fields': ('namber', 'type', 'need_loaders', 'scheduled_date', 'scheduled_time', 'adress_from', 'adress_to', 'date'),
 		}),
 		('Відображення', {
 			'fields': ('order', 'is_featured'),

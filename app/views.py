@@ -130,6 +130,7 @@ def send_telegram_async(order, from_maps=None, to_maps=None):
         f"<b>🚚 Нове замовлення #{order.pk}</b>\n\n"
         f"📞 Телефон: {escape(order.namber)}\n"
         f"📦 Тип: {escape(order.type)}\n"
+        f"🧰 Вантажники: {'так' if order.need_loaders else 'ні'}\n"
         f"📅 Коли: {escape(when)}\n"
         f"{_telegram_place_line('📍 Звідки:', order.adress_from, from_maps)}\n"
         f"{_telegram_place_line('🏁 Куди:', order.adress_to, to_maps)}\n"
@@ -220,6 +221,11 @@ def index(request):
         if not scheduled_time:
             errors.append('Вкажіть орієнтовний час перевезення.')
 
+        need_loaders_raw = request.POST.get('need_loaders', '').strip()
+        if need_loaders_raw not in ('yes', 'no'):
+            errors.append('Оберіть, чи потрібні вантажники.')
+        need_loaders = need_loaders_raw == 'yes'
+
         if errors:
             for error in errors:
                 messages.error(request, error)
@@ -243,6 +249,7 @@ def index(request):
             adress_to=to_location,
             scheduled_date=scheduled_date,
             scheduled_time=scheduled_time,
+            need_loaders=need_loaders,
         )
 
         send_telegram_async(order, from_maps=from_maps, to_maps=to_maps)

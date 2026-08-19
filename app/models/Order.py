@@ -8,6 +8,7 @@ class Order(models.Model):
 	adress_to = models.TextField(blank=True, verbose_name='Куди')
 	scheduled_date = models.DateField(null=True, blank=True, verbose_name='Бажана дата')
 	scheduled_time = models.TimeField(null=True, blank=True, verbose_name='Орієнтовний час')
+	need_loaders = models.BooleanField(default=False, verbose_name='Потрібні вантажники')
 	date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 	order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 	is_featured = models.BooleanField(default=False, verbose_name='Виділити')
