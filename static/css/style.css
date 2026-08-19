@@ -114,9 +114,37 @@ h2 {
     margin: 0;
 }
 
-.hero-cta,
-.hero .order-btn {
+.hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
     margin-top: 22px;
+}
+
+.channel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    min-height: 56px;
+}
+
+.channel-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.channel-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
 }
 
 /* ===== Navigation ===== */
@@ -158,6 +186,7 @@ h2 {
 .btn,
 .tab-button,
 .order-btn,
+.channel-btn,
 .modal-close,
 .photo-lightbox-close,
 .works-link {
@@ -693,6 +722,56 @@ body.modal-open {
     gap: 6px;
 }
 
+.form-field--map {
+    position: relative;
+    z-index: 1;
+}
+
+.address-input-wrap {
+    position: relative;
+    z-index: 5;
+}
+
+.address-suggest {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 6;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 36, 0.12);
+    border-radius: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.address-suggest-item,
+.address-suggest-empty {
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--text);
+}
+
+.address-suggest-item {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.address-suggest-item:hover,
+.address-suggest-item.is-active {
+    background: #eef3f7;
+}
+
+.address-suggest-empty {
+    color: var(--muted);
+}
+
 .form-field span,
 .form-field label {
     font-size: 14px;
@@ -708,6 +787,9 @@ body.modal-open {
 }
 
 .order-map {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
     width: 100%;
     height: 200px;
     min-height: 200px;
@@ -780,7 +862,8 @@ body.modal-open {
         min-height: 44px;
     }
 
-    .order-btn--hero {
+    .order-btn--hero,
+    .channel-btn {
         width: 100%;
         font-size: 18px;
         padding: 16px 20px;

@@ -113,6 +113,11 @@ document.getElementById('phoneCopy')?.addEventListener('click', e => {
       closePhotoLightbox();
       return;
     }
+    const openSuggest = document.querySelector('.address-suggest:not([hidden])');
+    if (openSuggest) {
+      openSuggest.hidden = true;
+      return;
+    }
     if (orderModal?.classList.contains('open')) {
       closeOrderModal();
     }
@@ -255,15 +260,41 @@ document.getElementById('phoneCopy')?.addEventListener('click', e => {
     });
   });
 
-  function formatNominatimAddress(address) {
-    if (!address) return '';
-    const city = address.city || address.town || address.village || address.municipality || address.hamlet;
+  function formatNominatimAddress(address, fallback = '') {
+    if (!address) return fallback;
     const street = address.road || address.pedestrian || address.street || address.residential || address.footway;
     const house = address.house_number;
+    const place = address.city || address.town || address.village || address.hamlet;
+    const suburb = address.suburb || address.neighbourhood;
+    const region = address.state;
     const parts = [];
-    if (city) parts.push(city);
-    if (street) parts.push(house ? `${street}, ${house}` : street);
-    return parts.join(', ');
+    if (street) {
+      parts.push(house ? `${street}, ${house}` : street);
+    } else if (address.amenity || address.building) {
+      parts.push(address.amenity || address.building);
+    }
+    if (suburb && suburb !== place) parts.push(suburb);
+    if (place) parts.push(place);
+    else if (address.municipality) parts.push(address.municipality);
+    if (region && region !== place) parts.push(region);
+    return parts.join(', ') || fallback;
+  }
+
+  function shortAddressLabel(item) {
+    const fallback = (item.display_name || '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => (
+        part
+        && part !== 'Україна'
+        && part !== 'Ukraine'
+        && !/^\d{5}$/.test(part)
+        && !/громада$/i.test(part)
+        && !/район$/i.test(part)
+      ))
+      .slice(0, 3)
+      .join(', ');
+    return formatNominatimAddress(item.address, fallback);
   }
 
   function loadLeaflet() {
@@ -306,41 +337,184 @@ document.getElementById('phoneCopy')?.addEventListener('click', e => {
       }).addTo(map);
 
       let marker = null;
+      let skipSearch = false;
+      let searchTimer = null;
+      let searchAbort = null;
+      let suggestItems = [];
+      let activeIndex = -1;
 
-      const setPoint = async (latlng) => {
+      const suggest = document.createElement('ul');
+      suggest.className = 'address-suggest';
+      suggest.hidden = true;
+      suggest.setAttribute('role', 'listbox');
+      const wrap = document.createElement('div');
+      wrap.className = 'address-input-wrap';
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+      wrap.appendChild(suggest);
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-expanded', 'false');
+
+      const setInputValue = (value) => {
+        skipSearch = true;
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        skipSearch = false;
+      };
+
+      const hideSuggest = () => {
+        suggest.hidden = true;
+        suggest.innerHTML = '';
+        suggestItems = [];
+        activeIndex = -1;
+        input.setAttribute('aria-expanded', 'false');
+      };
+
+      const highlightSuggest = (index) => {
+        activeIndex = index;
+        [...suggest.children].forEach((el, i) => {
+          el.classList.toggle('is-active', i === index);
+        });
+      };
+
+      const placeMarker = (latlng, { fly = false } = {}) => {
         if (marker) {
           marker.setLatLng(latlng);
         } else {
           marker = window.L.marker(latlng, { draggable: true }).addTo(map);
-          marker.on('dragend', () => setPoint(marker.getLatLng()));
+          marker.on('dragend', () => setPointFromMap(marker.getLatLng()));
         }
-
         latInput.value = latlng.lat.toFixed(6);
         lngInput.value = latlng.lng.toFixed(6);
         mapEl.classList.remove('is-invalid');
         clearFieldError(input);
-        input.value = 'Шукаємо адресу…';
-        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (fly) {
+          map.setView(latlng, Math.max(map.getZoom(), 16));
+        }
+      };
 
+      const applySearchResult = (item) => {
+        const latlng = { lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
+        if (!Number.isFinite(latlng.lat) || !Number.isFinite(latlng.lng)) return;
+        placeMarker(latlng, { fly: true });
+        setInputValue(shortAddressLabel(item));
+        hideSuggest();
+      };
+
+      const renderSuggest = (items, emptyText) => {
+        suggest.innerHTML = '';
+        suggestItems = items;
+        activeIndex = items.length === 1 ? 0 : -1;
+        if (!items.length) {
+          const empty = document.createElement('li');
+          empty.className = 'address-suggest-empty';
+          empty.textContent = emptyText;
+          suggest.appendChild(empty);
+        } else {
+          items.forEach((item, index) => {
+            const option = document.createElement('li');
+            option.className = 'address-suggest-item';
+            option.setAttribute('role', 'option');
+            option.textContent = shortAddressLabel(item);
+            option.addEventListener('mousedown', (event) => {
+              event.preventDefault();
+              applySearchResult(item);
+            });
+            if (index === activeIndex) option.classList.add('is-active');
+            suggest.appendChild(option);
+          });
+        }
+        suggest.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      };
+
+      const searchAddress = async (query) => {
+        if (searchAbort) searchAbort.abort();
+        searchAbort = new AbortController();
+        const params = new URLSearchParams({
+          q: query,
+          format: 'json',
+          addressdetails: '1',
+          limit: '6',
+          'accept-language': 'uk',
+          countrycodes: 'ua',
+          viewbox: '29.9,50.75,30.7,50.2',
+          bounded: '0',
+        });
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?${params}`,
+            { signal: searchAbort.signal, headers: { Accept: 'application/json' } },
+          );
+          if (!response.ok) throw new Error('search failed');
+          const results = await response.json();
+          if (!Array.isArray(results) || !results.length) {
+            renderSuggest([], 'Адресу не знайдено — поставте мітку на карті');
+            return;
+          }
+          if (results.length === 1) {
+            applySearchResult(results[0]);
+            return;
+          }
+          renderSuggest(results);
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+          renderSuggest([], 'Не вдалося знайти адресу. Спробуйте ще раз або поставте мітку.');
+        }
+      };
+
+      const setPointFromMap = async (latlng) => {
+        hideSuggest();
+        placeMarker(latlng);
+        setInputValue('Шукаємо адресу…');
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json&addressdetails=1&accept-language=uk`,
           );
           if (!response.ok) throw new Error('reverse geocode failed');
           const data = await response.json();
-          input.value = formatNominatimAddress(data.address) || data.display_name || input.value;
+          setInputValue(formatNominatimAddress(data.address, data.display_name) || input.value);
         } catch {
-          input.value = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+          setInputValue(`${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`);
         }
-        input.dispatchEvent(new Event('input', { bubbles: true }));
       };
 
-      map.on('click', (event) => setPoint(event.latlng));
+      input.addEventListener('input', () => {
+        if (skipSearch) return;
+        latInput.value = '';
+        lngInput.value = '';
+        hideSuggest();
+        const query = input.value.trim();
+        clearTimeout(searchTimer);
+        if (query.length < 3) return;
+        searchTimer = setTimeout(() => searchAddress(query), 450);
+      });
+
+      input.addEventListener('keydown', (event) => {
+        if (suggest.hidden || !suggestItems.length) return;
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          highlightSuggest(Math.min(activeIndex + 1, suggestItems.length - 1));
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          highlightSuggest(Math.max(activeIndex - 1, 0));
+        } else if (event.key === 'Enter' && activeIndex >= 0) {
+          event.preventDefault();
+          applySearchResult(suggestItems[activeIndex]);
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        setTimeout(hideSuggest, 150);
+      });
+
+      map.on('click', (event) => setPointFromMap(event.latlng));
 
       const savedLat = parseFloat(latInput.value);
       const savedLng = parseFloat(lngInput.value);
       if (Number.isFinite(savedLat) && Number.isFinite(savedLng)) {
-        setPoint({ lat: savedLat, lng: savedLng });
+        placeMarker({ lat: savedLat, lng: savedLng }, { fly: true });
       }
 
       return {

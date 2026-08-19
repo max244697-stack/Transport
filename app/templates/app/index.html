@@ -58,9 +58,15 @@
 
       <p class="lead">Буча • Ірпінь • Гостомель • Ворзель • Київ та область</p>
       <p class="sub">Швидкі та надійні вантажоперевезення — дивани, офіси, будматеріали.</p>
-      <button type="button" class="order-btn order-btn--hero" data-open-order aria-haspopup="dialog">
-        Замовити
-      </button>
+      <div class="hero-cta">
+        <button type="button" class="order-btn order-btn--hero" data-open-order aria-haspopup="dialog">
+          Замовити
+        </button>
+        <a href="https://t.me/bus_pereizd_bucha" class="channel-btn" target="_blank" rel="noopener noreferrer">
+          <img src="{% static 'images/telegram.png' %}" class="iconphone" alt="">
+          Telegram-канал
+        </a>
+      </div>
     </div>
   </header>
 
@@ -234,6 +240,7 @@
       <span>© 2026 БусПереїзд Буча</span>
       <p>Якщо будуть питання — пишіть або телефонуйте, ми завжди доступні!</p>
       <a href="tel:0934205320" class="footer-phone" aria-label="Телефон">093 420 53 20</a>
+      <a href="https://t.me/bus_pereizd_bucha" target="_blank" rel="noopener noreferrer">Telegram-канал</a>
       <a href="https://t.me/buchagruz" target="_blank" rel="noopener noreferrer"><img src="{% static 'images/telegram.png' %}" class="iconphone" alt="Telegram"></a>
       <a href="https://connect.viber.com/business/ebc2219e-0634-11f1-8c88-aa49d1a7a8c8" target="_blank" rel="noopener noreferrer"><img
           src="{% static 'images/viber.png' %}" class="iconphone" alt="Viber"></a>
@@ -296,22 +303,22 @@
         <div class="order-maps">
           <div class="form-field form-field--map">
             <label for="from_location">Звідки *</label>
-            <input id="from_location" type="text" name="from_location" required autocomplete="street-address"
+            <input id="from_location" type="text" name="from_location" required autocomplete="off"
               placeholder="Місто, вулиця, будинок" value="{{ request.POST.from_location }}">
             <input type="hidden" name="from_lat" value="{{ request.POST.from_lat }}">
             <input type="hidden" name="from_lng" value="{{ request.POST.from_lng }}">
             <div class="order-map" id="map-from" role="application" aria-label="Карта пункту відправлення"></div>
-            <small class="map-hint">Поставте мітку на карті — обовʼязково</small>
+            <small class="map-hint">Введіть адресу або поставте мітку на карті</small>
           </div>
 
           <div class="form-field form-field--map">
             <label for="to_location">Куди *</label>
-            <input id="to_location" type="text" name="to_location" required autocomplete="street-address"
+            <input id="to_location" type="text" name="to_location" required autocomplete="off"
               placeholder="Місто, вулиця, будинок" value="{{ request.POST.to_location }}">
             <input type="hidden" name="to_lat" value="{{ request.POST.to_lat }}">
             <input type="hidden" name="to_lng" value="{{ request.POST.to_lng }}">
             <div class="order-map" id="map-to" role="application" aria-label="Карта пункту призначення"></div>
-            <small class="map-hint">Поставте мітку на карті — обовʼязково</small>
+            <small class="map-hint">Введіть адресу або поставте мітку на карті</small>
           </div>
         </div>
         
