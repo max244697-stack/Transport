@@ -19,25 +19,23 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError('SECRET_KEY environment variable is not set')
 
-# MEDIA_URL = '/media/'
-
-
-
-
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
-
-AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
-
+AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '').removeprefix(
+    'https://'
+).removeprefix('http://').rstrip('/')
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
 AWS_QUERYSTRING_AUTH = False
-# AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
-# AWS_S3_SIGNATURE_VERSION = 's3v4'
-# AWS_DEFAULT_ACL = None
-# AWS_S3_OBJECT_PARAMETERS = {
-#     'CacheControl': 'max-age=86400',
-# }
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+if AWS_S3_CUSTOM_DOMAIN:
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
 
 # CSRF trusted origins for Railway
@@ -71,21 +69,27 @@ CSRF_COOKIE_SECURE = True
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 
-# Set MEDIA_URL for R2
-# if AWS_S3_CUSTOM_DOMAIN:
-#     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
-# elif AWS_STORAGE_BUCKET_NAME:
-#     MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.r2.dev/'
-# else:
+# Photos (CompletedOrder) go to Cloudflare R2. CSS/JS stay on the app via WhiteNoise.
+_s3_options = {
+    "access_key": AWS_ACCESS_KEY_ID,
+    "secret_key": AWS_SECRET_ACCESS_KEY,
+    "bucket_name": AWS_STORAGE_BUCKET_NAME,
+    "endpoint_url": AWS_S3_ENDPOINT_URL,
+    "region_name": AWS_S3_REGION_NAME,
+    "default_acl": AWS_DEFAULT_ACL,
+    "querystring_auth": AWS_QUERYSTRING_AUTH,
+    "file_overwrite": AWS_S3_FILE_OVERWRITE,
+    "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+    "addressing_style": "path",
+    "signature_version": "s3v4",
+}
+if AWS_S3_CUSTOM_DOMAIN:
+    _s3_options["custom_domain"] = AWS_S3_CUSTOM_DOMAIN
 
 STORAGES = {
     "default": {
-        # "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "location": "",
-        },
+        "OPTIONS": _s3_options,
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
