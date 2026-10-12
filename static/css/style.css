@@ -54,7 +54,7 @@ body {
 
 /* ===== Layout ===== */
 .container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 24px;
 }
@@ -254,7 +254,13 @@ h2 {
 }
 
 /* ===== Cards ===== */
-.tariff-cards,
+.tariff-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
 .info-cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -946,6 +952,16 @@ body.modal-open {
     #panel-about h3 {
         font-size: 18px;
         overflow-wrap: anywhere;
+    }
+}
+
+@media (min-width: 801px) {
+    .tariff-item {
+        flex-wrap: wrap;
+    }
+
+    .tariff-name {
+        flex: 1 1 220px;
     }
 }
 

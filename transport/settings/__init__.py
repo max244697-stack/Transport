@@ -1,6 +1,8 @@
 import os
+from dotenv import load_dotenv
 
-# Import production settings by default
+load_dotenv()
+
 if os.environ.get('DEBUG') == 'True':
     from .dev import *
 else:
