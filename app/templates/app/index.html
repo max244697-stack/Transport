@@ -34,11 +34,10 @@
     </script>
   <!-- End Meta Pixel Code --> {% endcomment %}
   <!-- Meta Pixel Code -->
-  <!-- End Meta Pixel Code -->
   <script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
   if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
   n.queue=[];t=b.createElement(e);t.async=!0;
   t.src=v;s=b.getElementsByTagName(e)[0];
@@ -46,9 +45,10 @@
   'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '1140976135123899');
   fbq('track', 'PageView');
-  </script>
+</script>
 <noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1140976135123899&ev=PageView&noscript=1"/>
+  src="https://www.facebook.com/tr?id=1140976135123899&ev=PageView&noscript=1"/>
+  <!-- End Meta Pixel Code -->
 </noscript>
 </head>
 
@@ -78,7 +78,7 @@ src="https://www.facebook.com/tr?id=1140976135123899&ev=PageView&noscript=1"/>
 
     
         <div class="hero-contacts">
-          <a href="tel:0934205320" class="btn phone" id="phoneCopy" data-phone="093 420 53 20"
+          <a href="tel:0934205320" onclick="fbq('track', 'Contact')" class="btn phone" id="phoneCopy" data-phone="093 420 53 20"
             aria-label="Скопіювати номер телефону">
             <svg class="iconphone" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
               <path
@@ -87,12 +87,12 @@ src="https://www.facebook.com/tr?id=1140976135123899&ev=PageView&noscript=1"/>
             093 420 53 20
           </a>
 
-          <a href="https://t.me/buchagruz" class="btn telegram" target="_blank" rel="noopener noreferrer">
+          <a href="https://t.me/buchagruz" onclick="fbq('track', 'Contact')" class="btn telegram" target="_blank" rel="noopener noreferrer">
             <img src="{% static 'images/telegram.png' %}" class="iconphone" alt="">
             Telegram
           </a>
 
-          <a href="https://connect.viber.com/business/ebc2219e-0634-11f1-8c88-aa49d1a7a8c8" class="btn viber" target="_blank" rel="noopener noreferrer">
+          <a href="https://connect.viber.com/business/ebc2219e-0634-11f1-8c88-aa49d1a7a8c8" onclick="fbq('track', 'Contact')" class="btn viber" target="_blank" rel="noopener noreferrer">
             <img src="{% static 'images/viber.png' %}" class="iconphone" alt="">
             Viber
           </a>
@@ -102,10 +102,10 @@ src="https://www.facebook.com/tr?id=1140976135123899&ev=PageView&noscript=1"/>
       <p class="lead">Буча • Ірпінь • Гостомель • Ворзель • Київ та область</p>
       <p class="sub">Швидкі та надійні вантажоперевезення — дивани, офіси, будматеріали.</p>
       <div class="hero-cta">
-        <button type="button" class="order-btn order-btn--hero" data-open-order aria-haspopup="dialog">
+        <button onclick="fbq('track', 'Lead')" type="button" class="order-btn order-btn--hero" data-open-order aria-haspopup="dialog">
           Замовити
         </button>
-        <a href="https://t.me/bus_pereizd_bucha" class="channel-btn" target="_blank" rel="noopener noreferrer">
+        <a href="https://t.me/bus_pereizd_bucha" onclick="fbq('track', 'Contact')" class="channel-btn" target="_blank" rel="noopener noreferrer">
           <img src="{% static 'images/telegram.png' %}" class="iconphone" alt="">
           Telegram-канал
         </a>
