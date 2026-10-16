@@ -331,9 +331,9 @@ document.getElementById('phoneCopy')?.addEventListener('click', e => {
         scrollWheelZoom: false,
         tap: true,
       }).setView(start, 13);
-      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap, &copy; CARTO',
+        attribution: 'Tiles &copy; Esri',
       }).addTo(map);
 
       let marker = null;
